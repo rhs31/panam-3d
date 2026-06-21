@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pan-Am Pavilion - 3D Model</title>
+<style>
+  html,body{margin:0;min-height:100%;background:#eef1f4;color:#243038;
+    font-family:"Segoe UI",system-ui,Arial,sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:34px 22px 48px;text-align:center}
+  h1{font-size:26px;margin:6px 0 2px;letter-spacing:.3px}
+  .sub{font-size:15px;color:#4a5560;margin:0 0 22px}
+  .card{background:#fff;border:1px solid #d3d9df;border-radius:12px;
+    box-shadow:0 6px 22px rgba(40,55,70,.10);padding:20px;}
+  img{width:100%;max-width:680px;border-radius:8px;display:block;margin:0 auto 6px;
+    background:#eef1f4}
+  .cap{font-size:12px;color:#6a747d;margin:0 0 18px}
+  a.btn{display:inline-block;text-decoration:none;font-size:18px;font-weight:700;
+    color:#fff;background:#b0493a;padding:15px 30px;border-radius:10px;
+    box-shadow:0 3px 0 #843327;}
+  a.btn:hover{background:#bd5042}
+  a.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #843327}
+  .how{font-size:14px;color:#3b454e;background:#f3f6f9;border:1px solid #dde3e9;
+    border-radius:8px;padding:12px 16px;margin:20px auto 0;max-width:600px;line-height:1.6;text-align:left}
+  .how b{color:#243038}
+  .note{font-size:12px;color:#6a747d;margin:22px auto 0;max-width:600px;line-height:1.5}
+  .browser{font-size:13px;color:#4a5560;margin:14px 0 0}
+</style></head><body>
+<div class="wrap">
+  <h1>PAN-AM PAVILION &mdash; 3D Model</h1>
+  <p class="sub">A simple 3D massing of the building, built from your concept drawings.
+    &mdash; Happy Father's Day.</p>
+
+  <div class="card">
+    <img src="spin.gif" alt="Spinning 3D model of the Pan-Am Pavilion">
+    <p class="cap">A short spinning preview of the model.</p>
+    <a class="btn" href="model.html">
+      &#9654;&nbsp; Open the interactive 3D model</a>
+    <p class="browser">It opens right here in your browser &mdash; then you can
+      <b>drag to spin it</b>, <b>scroll to zoom</b>, and
+      <b>hold the right mouse button and move</b> to slide it around (pan).</p>
+  </div>
+
+  <div class="how">
+    <b>How to use this:</b><br>
+    1. Click the red button above to open the model you can spin with the mouse.<br>
+    2. To come back to this page, use your browser's Back button.<br>
+    3. If the interactive model is ever slow to load, the spinning picture above
+       shows the same model.
+  </div>
+
+  <p class="note">This is a SCHEMATIC massing (a study block-model) for visualizing
+    the overall form &mdash; two masses around an open courtyard, with the new hipped
+    roof. It is not a construction document. Heights are taken from your concept
+    section (1st floor ~15&prime;, 2nd-floor ceiling ~11&prime;, ~34&prime; overall).</p>
+</div>
+<script>
+  // Cache-buster: stamp a fresh time on the link at click, so an updated model
+  // always loads the newest version (no hard-refresh needed during iteration).
+  (function(){ var b=document.querySelector('a.btn');
+    b.addEventListener('click', function(){ b.href='model.html?t='+Date.now(); });
+  })();
+</script>
+</body></html>
