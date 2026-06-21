@@ -35,7 +35,7 @@
   <button id="spin">Pause spin</button>
   <button id="reset">Reset view</button>
 </div>
-<div id="verbadge">balanced-turntable build &middot; 2026-06-21 (narrow-FOV)</div>
+<div id="verbadge">centered + spin build &middot; 2026-06-21d</div>
 <div id="key">
   <div><span class="sw" style="background:#d9dde2"></span><b>1st floor</b> retail shell &mdash; walls extruded 0&rarr;15&prime;</div>
   <div><span class="sw" style="background:#c7ced6"></span><b>2nd floor</b> guest units &mdash; two wings 15&rarr;26&prime;</div>
@@ -1112,7 +1112,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const camera = new THREE.PerspectiveCamera(26, 1, 0.5, 6000);  // narrow FOV ~ near-orthographic: a long building stays balanced/centred at every rotation angle
 const controls = new THREE.OrbitControls(camera, canvas);
 controls.enableDamping = true; controls.dampingFactor = 0.08;
-controls.autoRotate = true; controls.autoRotateSpeed = 0.9;
+controls.autoRotate = true; controls.autoRotateSpeed = 0.9;  // spins by default from the symmetric hero start; button pauses it
 controls.minDistance = 60; controls.maxDistance = 900;
 controls.maxPolarAngle = Math.PI*0.495;
 
@@ -1178,7 +1178,7 @@ function fitDistance(radius){      // distance that contains the bounding sphere
 function frame(){
   const sph = new THREE.Box3().setFromObject(root).getBoundingSphere(new THREE.Sphere());
   const dist = fitDistance(sph.radius)*0.82;            // fill the frame, keep margin so it never overflows while spinning
-  const dir = new THREE.Vector3(0.484, 0.407, 0.775);  // az ~32, elev ~24 (clean turntable)
+  const dir = new THREE.Vector3(0.899, 0.438, 0.0);    // az 90 (look down the length), elev ~26 -> symmetric hero view, both wings flanking the courtyard
   controls.target.copy(sph.center);                    // pivot at the TRUE centre -> spins in place
   camera.position.copy(sph.center).add(dir.multiplyScalar(dist));
   camera.near = Math.max(0.5, dist/200); camera.far = dist*8;
@@ -1205,14 +1205,16 @@ window.PanAm = {
 // ---- ui ----
 const spinBtn = document.getElementById('spin');
 spinBtn.onclick = ()=>{ controls.autoRotate = !controls.autoRotate;
-  spinBtn.textContent = controls.autoRotate ? 'Pause spin' : 'Resume spin'; };
+  spinBtn.textContent = controls.autoRotate ? 'Pause spin' : '▶ Spin'; };
 document.getElementById('reset').onclick = frame;
 
 let userMoved = false;
 controls.addEventListener('start', ()=>{ userMoved = true; });   // they grabbed it -> stop auto-framing
 function resize(){
   const w = innerWidth, h = innerHeight;
-  renderer.setSize(w,h,false); camera.aspect = w/h; camera.updateProjectionMatrix();
+  renderer.setSize(w,h);           // updateStyle=true: canvas CSS size matches the window
+                                   // (the old `,false` let the canvas overflow on HiDPI/scaled displays -> looked off-centre)
+  camera.aspect = w/h; camera.updateProjectionMatrix();
   if(!userMoved) frame();          // keep it framed/centred until the user interacts
 }
 addEventListener('resize', resize); resize();
