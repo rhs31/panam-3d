@@ -33,9 +33,11 @@
   <b>drag</b> to orbit &middot; <b>scroll</b> to zoom &middot; <b>right-click-drag</b> to pan</p></div>
 <div id="btns">
   <button id="spin">Pause spin</button>
+  <button id="roof">Hide roof</button>
+  <button id="xray">See inside</button>
   <button id="reset">Reset view</button>
 </div>
-<div id="verbadge">centered + spin build &middot; 2026-06-21d</div>
+<div id="verbadge">interior-views build &middot; 2026-06-21e</div>
 <div id="key">
   <div><span class="sw" style="background:#d9dde2"></span><b>1st floor</b> retail shell &mdash; walls extruded 0&rarr;15&prime;</div>
   <div><span class="sw" style="background:#c7ced6"></span><b>2nd floor</b> guest units &mdash; two wings 15&rarr;26&prime;</div>
@@ -1121,7 +1123,8 @@ const bb = DATA.bbox;
 const cx = (bb.x0+bb.x1)/2, cz = (bb.z0+bb.z1)/2;
 const root = new THREE.Group();
 
-function mesh(arr, color, opts={}){
+const parts = {};   // keep handles so the Hide-roof / See-inside toggles can reach each piece
+function mesh(name, arr, color, opts={}){
   if(!arr || !arr.length) return null;
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3));
@@ -1132,17 +1135,19 @@ function mesh(arr, color, opts={}){
   const mh = new THREE.Mesh(g, m);
   mh.castShadow = !!opts.cast; mh.receiveShadow = !!opts.recv;
   root.add(mh);
+  let e = null;
   if(opts.edges){
-    const e = new THREE.LineSegments(new THREE.EdgesGeometry(g, 1),
+    e = new THREE.LineSegments(new THREE.EdgesGeometry(g, 1),
       new THREE.LineBasicMaterial({color:opts.edges, transparent:true, opacity:.5}));
     root.add(e);
   }
+  parts[name] = {mesh:mh, mat:m, edges:e, cast:!!opts.cast, baseOpacity:(opts.opacity||1), xrayOpacity:(opts.xray||0.3)};
   return mh;
 }
-mesh(DATA.slabs,  0xe8e2d4, {recv:true, edges:0x9a917c});
-mesh(DATA.walls1, 0xd9dde2, {cast:true, recv:true, edges:0x6b7682});
-mesh(DATA.walls2, 0xc7ced6, {cast:true, recv:true, edges:0x586472});
-mesh(DATA.roof,   0xb0493a, {cast:true, edges:0x5f2620});
+mesh('slabs',  DATA.slabs,  0xe8e2d4, {recv:true, edges:0x9a917c, xray:0.18});
+mesh('walls1', DATA.walls1, 0xd9dde2, {cast:true, recv:true, edges:0x6b7682, xray:0.34});
+mesh('walls2', DATA.walls2, 0xc7ced6, {cast:true, recv:true, edges:0x586472, xray:0.34});
+mesh('roof',   DATA.roof,   0xb0493a, {cast:true, edges:0x5f2620, xray:0.15});
 
 root.position.set(-cx, 0, -cz);          // centre on origin
 scene.add(root);
@@ -1207,6 +1212,30 @@ const spinBtn = document.getElementById('spin');
 spinBtn.onclick = ()=>{ controls.autoRotate = !controls.autoRotate;
   spinBtn.textContent = controls.autoRotate ? 'Pause spin' : '▶ Spin'; };
 document.getElementById('reset').onclick = frame;
+
+// ---- interior views: Hide roof + See inside (x-ray) ----
+let roofOn = true, xrayOn = false;
+const roofBtn = document.getElementById('roof');
+roofBtn.onclick = ()=>{
+  roofOn = !roofOn;
+  parts.roof.mesh.visible = roofOn;
+  if(parts.roof.edges) parts.roof.edges.visible = roofOn;
+  roofBtn.textContent = roofOn ? 'Hide roof' : 'Show roof';
+};
+const xrayBtn = document.getElementById('xray');
+xrayBtn.onclick = ()=>{
+  xrayOn = !xrayOn;
+  for(const n in parts){
+    const p = parts[n];
+    p.mat.transparent = xrayOn ? true : (p.baseOpacity < 1);
+    p.mat.opacity     = xrayOn ? p.xrayOpacity : p.baseOpacity;
+    p.mat.depthWrite  = xrayOn ? false : true;     // cleaner blending of the see-through shell
+    p.mat.needsUpdate = true;
+    p.mesh.castShadow = xrayOn ? false : p.cast;    // don't cast heavy shadows while ghosted
+    if(p.edges) p.edges.material.opacity = xrayOn ? 0.85 : 0.5;
+  }
+  xrayBtn.textContent = xrayOn ? 'Solid view' : 'See inside';
+};
 
 let userMoved = false;
 controls.addEventListener('start', ()=>{ userMoved = true; });   // they grabbed it -> stop auto-framing
